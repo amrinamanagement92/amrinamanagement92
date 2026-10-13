@@ -1,0 +1,12 @@
+{
+  "name": "Amrina Legacy – Pengurusan Dalaman",
+  "short_name": "Amrina Admin",
+  "start_url": "admin.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FAF8F6",
+  "theme_color": "#FAF8F6",
+  "icons": [
+    { "src": "ikon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
