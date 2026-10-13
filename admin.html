@@ -1,0 +1,851 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Admin · Amrina Legacy</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#FAF8F6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1F1D1B; --muted:#6B6560; --body:#4A4541; --line:#DCD6CF; --line-soft:#E9E5E0; --line-faint:#F0ECE7;
+  --ground:#FAF8F6; --surface:#FFFFFF; --rose:#7E3F48; --rose-dark:#5E2C34; --rose-soft:#F5EBEC; --rose-faint:#FBF4F5;
+  --sage:#2F5240; --sage-soft:#E6EFE9; --sage-faint:#F1F7F3; --amber:#7A4E0E; --amber-soft:#FBF1DE; --grey-soft:#F2EFEC;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--ground);color:var(--ink);font-family:'Manrope',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%}
+a{color:var(--rose)} a:hover{color:var(--rose-dark)}
+button{font-family:inherit}
+:focus-visible{outline:3px solid var(--rose);outline-offset:2px}
+[hidden]{display:none!important}
+h1,h2,h3{margin:0}
+.serif{font-family:'Playfair Display',Georgia,serif}
+
+/* ---------- Log masuk ---------- */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.login-card{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--line-soft);border-radius:20px;padding:32px 24px;display:flex;flex-direction:column;gap:18px;text-align:center}
+.pin{font:700 28px 'Manrope',sans-serif;letter-spacing:10px;text-align:center;min-height:64px;border-radius:14px;border:2px solid var(--line);width:100%;padding:0 12px}
+.pin:focus{border-color:var(--rose);outline:none}
+
+/* ---------- Susun atur ---------- */
+.app{display:flex;min-height:100vh}
+.side{width:248px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--line-soft);padding:28px 16px;display:flex;flex-direction:column;gap:28px;position:sticky;top:0;height:100vh}
+.brand{font-family:'Playfair Display',Georgia,serif;font-size:24px;font-weight:600;color:var(--rose);padding:0 10px}
+.brand small{display:block;font-family:'Manrope',sans-serif;font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.4px}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button{display:flex;align-items:center;gap:12px;min-height:46px;padding:0 12px;border-radius:10px;border:0;background:none;color:#3D3935;font-size:14px;font-weight:500;cursor:pointer;text-align:left}
+.nav button:hover{background:var(--grey-soft)}
+.nav button[aria-current=page]{background:var(--rose-soft);color:var(--rose);font-weight:700}
+.side .bottom{margin-top:auto;display:flex;flex-direction:column;gap:6px}
+main{flex:1;min-width:0;padding:36px 40px 56px}
+.inner{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
+.bnav{display:none}
+
+@media (max-width:820px){
+  .side{display:none}
+  main{padding:20px 16px 112px}
+  .bnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line-soft);padding:6px 4px calc(8px + env(safe-area-inset-bottom))}
+  .bnav button{flex:1;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;background:none;font-size:12px;font-weight:600;color:var(--body);cursor:pointer}
+  .bnav button[aria-current=page]{color:var(--rose);font-weight:700}
+  .topbrand{display:flex!important}
+}
+.topbrand{display:none;justify-content:space-between;align-items:center}
+
+/* ---------- Komponen ---------- */
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px}
+.head .sub{font-size:14px;color:var(--muted)}
+.head h1{font-family:'Playfair Display',Georgia,serif;font-weight:500;font-size:32px}
+.btn{min-height:48px;padding:0 20px;border-radius:12px;border:0;background:var(--rose);color:#fff;font-size:15px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.btn:hover{background:var(--rose-dark);color:#fff}
+.btn.dark{background:var(--ink)} .btn.dark:hover{background:#000}
+.btn.green{background:var(--sage)} .btn.green:hover{background:#21402F}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)} .btn.ghost:hover{background:var(--grey-soft)}
+.btn.small{min-height:40px;padding:0 14px;font-size:14px;border-radius:10px}
+.btn:disabled{opacity:.55;cursor:wait}
+.card{background:var(--surface);border:1px solid var(--line-soft);border-radius:14px}
+.pad{padding:20px 22px}
+.grid-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.stat{padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.stat .l{font-size:13px;color:var(--muted)}
+.stat .v{font-size:28px;font-weight:700;letter-spacing:-.5px}
+.stat.dark{background:var(--ink);border-color:var(--ink);color:#fff} .stat.dark .l{color:#D8D2CB}
+.quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.qa{min-height:88px;display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:14px;border:1px solid var(--line-soft);background:var(--surface);text-align:left;cursor:pointer;color:var(--ink)}
+.qa:hover{border-color:var(--line)}
+.qa .ic{width:46px;height:46px;flex-shrink:0;border-radius:12px;background:var(--grey-soft);display:flex;align-items:center;justify-content:center}
+.qa b{display:block;font-size:16px} .qa span.s{font-size:13px;color:var(--body)}
+.qa.in{background:var(--sage-faint);border-color:#CFE0D5} .qa.in .ic{background:var(--sage);color:#fff}
+.qa.out{background:var(--rose-faint);border-color:#E8D2D5} .qa.out .ic{background:var(--rose);color:#fff}
+@media (max-width:520px){.quick{grid-template-columns:repeat(2,minmax(0,1fr))}.qa{flex-direction:column;align-items:flex-start;justify-content:space-between;min-height:112px}.qa span.s{display:none}
+  .grid-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.stat{padding:14px 16px}.stat .v{font-size:21px}.stat .l{font-size:12px}}
+.cols{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.cols>.main{flex:999 1 480px;min-width:0}
+.cols>.aside{flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:20px}
+.sec-h{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.sec-h h2{font-size:17px;font-weight:700}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--line-soft);border-radius:14px;width:100%;text-align:left;cursor:pointer;color:var(--ink);font-size:15px}
+.item:hover{border-color:var(--line)}
+.item .date{width:52px;flex-shrink:0;text-align:center;display:flex;flex-direction:column;line-height:1.2}
+.item .date b{font-size:21px} .item .date span{font-size:12px;color:var(--muted);text-transform:uppercase}
+.item .mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.item .mid b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .mid span{font-size:13px;color:var(--body)}
+.chip{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap;background:var(--grey-soft);color:var(--body)}
+.chip.ok{background:var(--sage-soft);color:var(--sage)} .chip.dep{background:var(--amber-soft);color:var(--amber)}
+.chip.no{background:#FBEAEA;color:#8A1F1F} .chip.done{background:var(--ink);color:#fff}
+.chip.pt{background:var(--amber-soft);color:var(--amber)} .chip.st{background:var(--ink);color:#fff}
+.amt-in{color:var(--sage);font-weight:700;white-space:nowrap} .amt-out{color:var(--rose);font-weight:700;white-space:nowrap}
+.empty{padding:28px 20px;text-align:center;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:14px}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.month{min-height:46px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font:600 15px 'Manrope',sans-serif;color:var(--ink)}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tabs button{min-height:42px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:14px;font-weight:600;color:var(--ink);cursor:pointer}
+.tabs button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
+.linkbox{background:var(--rose-soft);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.linkbox .url{background:#fff;border-radius:10px;padding:12px 14px;font-weight:700;word-break:break-all;font-size:14px}
+.row-btn{display:flex;gap:10px} .row-btn>*{flex:1}
+.loading{padding:40px;text-align:center;color:var(--muted)}
+.note{font-size:13px;color:var(--body);background:var(--grey-soft);border-radius:12px;padding:12px 16px;line-height:1.6}
+
+/* ---------- Borang & modal ---------- */
+dialog{border:0;padding:0;border-radius:20px;width:min(560px,calc(100vw - 24px));max-height:calc(100vh - 32px);background:var(--ground);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(31,29,27,.45)}
+@media (max-width:600px){dialog{width:100vw;max-width:100vw;margin:auto 0 0;border-radius:20px 20px 0 0;max-height:92vh}}
+.m-head{position:sticky;top:0;background:var(--ground);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:18px 20px 10px;z-index:1}
+.m-head h2{font-size:19px;font-weight:700}
+.x{width:44px;height:44px;border-radius:50%;border:0;background:var(--grey-soft);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.m-body{padding:6px 20px 24px;display:flex;flex-direction:column;gap:18px}
+.f{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600}
+.f .h{font-size:12px;font-weight:500;color:var(--muted)}
+.in,.f input,.f select,.f textarea{width:100%;min-height:50px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font:400 16px 'Manrope',sans-serif;color:var(--ink)}
+.f textarea{padding:12px 14px;min-height:84px;resize:vertical}
+.f input:focus,.f select:focus,.f textarea:focus{outline:2px solid var(--rose);border-color:var(--rose)}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;background:#EFEBE7;border-radius:14px;padding:5px}
+.seg.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.seg button{min-height:46px;border-radius:10px;border:0;background:transparent;color:var(--body);font-size:15px;font-weight:700;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--rose);color:#fff}
+.seg.green button[aria-pressed=true][data-v=Masuk]{background:var(--sage)}
+.money{display:flex;align-items:center;gap:8px;background:var(--surface);border:2px solid var(--rose);border-radius:14px;padding:0 16px;min-height:68px}
+.money span{font-size:20px;font-weight:700;color:var(--muted)}
+.money input{flex:1;min-width:0;border:0;outline:none;background:transparent;font:700 28px 'Manrope',sans-serif;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:14px;font-weight:600;color:var(--ink);cursor:pointer}
+.chips button[aria-pressed=true]{border:2px solid var(--rose);background:var(--rose-faint);color:var(--rose);padding:0 15px}
+.opt{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:14px;border:1px solid var(--line);background:var(--surface);cursor:pointer}
+.opt input{width:22px;height:22px;accent-color:var(--rose);margin:1px 0 0;flex-shrink:0}
+.opt:has(input:checked){border:2px solid var(--rose);background:var(--rose-faint);padding:13px 15px}
+.opt b{display:block;font-size:15px} .opt span{font-size:13px;color:var(--body)}
+.upload{display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border-radius:12px;border:1px dashed #B79AA0;background:var(--surface);color:var(--rose);font-weight:700;cursor:pointer;padding:6px 12px;text-align:center}
+.upload input{position:absolute;width:1px;height:1px;opacity:0}
+.err{background:#FBEAEA;color:#8A1F1F;border-radius:12px;padding:12px 14px;font-size:14px;font-weight:600}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:14px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:600;word-break:break-word}
+.itemrow{display:grid;grid-template-columns:1fr 120px 40px;gap:8px;align-items:center}
+.itemrow input{min-height:44px;padding:0 10px;border-radius:10px;border:1px solid var(--line);font:400 15px 'Manrope',sans-serif;width:100%}
+.del{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;color:var(--rose);font-size:20px;line-height:1}
+.total{display:flex;justify-content:space-between;align-items:center;background:var(--ink);color:#fff;border-radius:12px;padding:14px 18px;font-weight:700}
+.total b{font-size:22px}
+
+/* ---------- Toast ---------- */
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;font-size:14px;z-index:100;max-width:calc(100vw - 32px);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+@media (min-width:821px){#toast{bottom:32px}}
+
+/* ---------- Slip (cetak A4) ---------- */
+.slip{width:794px;min-height:1123px;background:#fff;color:#1F1D1B;padding:52px 58px;display:flex;flex-direction:column;gap:22px;font-size:13px;font-family:'Manrope',sans-serif}
+.slip-scroll{overflow:auto;border-radius:12px;border:1px solid var(--line-soft);background:#fff}
+.slip-scale{transform-origin:top left}
+.slip .hd{display:flex;justify-content:space-between;gap:20px;padding-bottom:20px;border-bottom:2px solid #1F1D1B}
+.slip .hd .nm{font-family:'Playfair Display',Georgia,serif;font-size:26px;font-weight:600;color:#7E3F48}
+.slip .grey{color:#4A4541}
+.slip .info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 30px;background:#FAF8F6;border-radius:10px;padding:16px 20px}
+.slip .info div{display:flex;justify-content:space-between;gap:10px}
+.slip .info span{color:#6B6560}
+.slip table{width:100%;border-collapse:collapse}
+.slip th{text-align:left;font-size:11px;letter-spacing:1px;padding:8px 0;border-bottom:1px solid #1F1D1B}
+.slip td{padding:8px 0;border-bottom:1px solid #EEEAE5}
+.slip .r{text-align:right}
+.slip .tot td{font-weight:700;border-bottom:0}
+.slip .net{display:flex;justify-content:space-between;align-items:center;background:#1F1D1B;color:#fff;border-radius:10px;padding:16px 22px}
+.slip .net b{font-size:24px}
+.slip .sign{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:48px}
+.slip .sign div{display:flex;flex-direction:column;gap:5px}
+.slip .sign .ln{height:52px;border-bottom:1px solid #1F1D1B}
+.slip .ft{padding-top:12px;border-top:1px solid #EEEAE5;color:#6B6560;font-size:11px;display:flex;justify-content:space-between}
+#cetak{display:none}
+@media print{
+  @page{size:A4;margin:0}
+  html,body{background:#fff}
+  body>*:not(#cetak){display:none!important}
+  #cetak{display:block!important}
+  #cetak .slip{width:210mm;min-height:297mm;padding:14mm 15mm}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ LOG MASUK ============ -->
+<section id="login" hidden>
+  <form class="login-card" id="loginForm">
+    <div class="serif" style="font-size:30px;font-weight:600;color:var(--rose)">Amrina Legacy</div>
+    <div style="color:var(--muted);font-size:14px;margin-top:-10px">Pengurusan Dalaman</div>
+    <label for="pin" style="font-weight:700;margin-top:8px">Masukkan PIN admin</label>
+    <input id="pin" class="pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="12" required>
+    <div class="err" id="loginErr" role="alert" hidden></div>
+    <button class="btn" type="submit" id="loginBtn" style="width:100%;min-height:54px">Masuk</button>
+    <div style="font-size:12px;color:var(--muted)">Lupa PIN? Buka Google Sheet &gt; menu Amrina Legacy &gt; Tetapkan PIN Admin.</div>
+  </form>
+</section>
+
+<!-- ============ APP ============ -->
+<div class="app" id="app" hidden>
+  <nav class="side" aria-label="Menu utama">
+    <div class="brand">Amrina Legacy<small>Pengurusan Dalaman</small></div>
+    <div class="nav" id="sideNav"></div>
+    <div class="bottom nav">
+      <button type="button" data-act="panduan"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/></svg>Panduan guna</button>
+      <button type="button" data-act="keluar"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>Log keluar</button>
+    </div>
+  </nav>
+  <main><div class="inner" id="view"></div></main>
+  <nav class="bnav" id="bottomNav" aria-label="Menu bawah"></nav>
+</div>
+
+<dialog id="modal" aria-labelledby="mTitle"></dialog>
+<div id="toast" role="status" hidden></div>
+<div id="cetak"></div>
+
+<script>
+'use strict';
+const API = 'https://script.google.com/macros/s/AKfycbx8a9Jw46LmNvrPDNNSU78fCILfHaBMBVbH230N4bFtFQtJgkxI2ZwQvvQ_Q6pzFtfS-Q/exec';
+const LINK_BORANG = (() => {
+  try { if (/^https?:$/.test(location.protocol)) return new URL('./', location.href).href; } catch (e) {}
+  return 'https://amrinamanagement92.github.io/';
+})();
+window.addEventListener('error', e => {
+  try { const t = document.getElementById('toast'); t.textContent = 'Ralat: ' + (e.message || 'tidak diketahui'); t.hidden = false; } catch (x) {}
+});
+
+/* ---------------- Pembantu ---------------- */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = x => { const n = parseFloat(String(x ?? '').replace(/[^0-9.\-]/g, '')); return isFinite(n) ? Math.round(n * 100) / 100 : 0; };
+const rm = (n, dp = 2) => 'RM ' + Number(n || 0).toLocaleString('en-MY', { minimumFractionDigits: dp, maximumFractionDigits: 2 });
+const BLN = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogo', 'Sep', 'Okt', 'Nov', 'Dis'];
+const BLN_PENUH = ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'];
+const HARI = ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'];
+function hariIni() { const t = new Date(); t.setMinutes(t.getMinutes() - t.getTimezoneOffset()); return t.toISOString().slice(0, 10); }
+const bulanIni = () => hariIni().slice(0, 7);
+function tkh(s) { const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${+m[3]} ${BLN[+m[2] - 1]} ${m[1]}` : esc(s || '—'); }
+function tkhSlip(s) { const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}/${m[1]}` : String(s || ''); }
+function namaBulan(ym) { const m = String(ym || '').match(/^(\d{4})-(\d{2})/); return m ? `${BLN_PENUH[+m[2] - 1]} ${m[1]}` : ym; }
+function waNo(t) { let d = String(t || '').replace(/\D/g, ''); if (d.startsWith('0')) d = '6' + d; return d; }
+const store = {
+  get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} },
+  del(k) { try { sessionStorage.removeItem(k); } catch (e) {} }
+};
+
+let PIN = store.get('al_pin') || '';
+let META = { kategori: [], servis: [], statusTempahan: [], syarikat: {} };
+let VIEW = 'utama';
+const ST = { bulanDuit: bulanIni(), bulanTempahan: bulanIni(), bulanGaji: bulanIni(), tapisPekerja: 'Semua', tapisStatus: 'Semua' };
+
+async function api(action, data = {}) {
+  let res;
+  try {
+    res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, data, pin: PIN }) });
+  } catch (e) { throw new Error('Tiada sambungan internet. Sila cuba lagi.'); }
+  const j = await res.json();
+  if (!j.ok) {
+    if (/PIN salah|PIN admin belum/.test(j.error) && action !== 'login') { keluar(); }
+    throw new Error(j.error || 'Ralat tidak diketahui.');
+  }
+  return j.data;
+}
+
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, 3200);
+}
+
+const ICON = {
+  utama: '<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/>',
+  tempahan: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/>',
+  duit: '<rect x="2" y="6" width="20" height="13" rx="2"/><circle cx="12" cy="12.5" r="2.5"/>',
+  pekerja: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.6 2.6 3 5.2"/>',
+  gaji: '<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>', minus: '<path d="M5 12h14"/>',
+  addcal: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18M12 13v5M9.5 15.5h5"/>',
+  share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>',
+  x: '<path d="M6 6l12 12M18 6 6 18"/>', camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/>'
+};
+const ic = (k, s = 20, w = 1.8) => `<svg aria-hidden="true" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>`;
+
+const MENU = [['utama', 'Utama', 'Papan Pemuka'], ['tempahan', 'Tempahan', 'Tempahan'], ['duit', 'Duit', 'Cashflow'], ['pekerja', 'Pekerja', 'Pekerja'], ['gaji', 'Gaji', 'Slip Gaji']];
+function binaMenu() {
+  $('#sideNav').innerHTML = MENU.map(([k, , p]) => `<button type="button" data-nav="${k}">${ic(k, 18)}${p}</button>`).join('');
+  $('#bottomNav').innerHTML = MENU.map(([k, p]) => `<button type="button" data-nav="${k}">${ic(k, 22)}${p}</button>`).join('');
+}
+function tandaMenu() {
+  document.querySelectorAll('[data-nav]').forEach(b => { if (b.dataset.nav === VIEW) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+}
+
+const topBrand = () => `<div class="topbrand"><div class="serif" style="font-size:22px;font-weight:600;color:var(--rose)">Amrina Legacy</div>
+  <div style="display:flex;gap:8px"><button class="x" type="button" data-act="panduan" aria-label="Panduan guna">${ic('help')}</button>
+  <button class="x" type="button" data-act="keluar" aria-label="Log keluar"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg></button></div></div>`;
+
+async function pergi(v) {
+  VIEW = v; tandaMenu(); window.scrollTo(0, 0);
+  const el = $('#view');
+  el.innerHTML = topBrand() + '<div class="loading">Sedang memuatkan…</div>';
+  try { await ({ utama: viewUtama, tempahan: viewTempahan, duit: viewDuit, pekerja: viewPekerja, gaji: viewGaji })[v](el); }
+  catch (e) { el.innerHTML = topBrand() + `<div class="err">${esc(e.message)}</div><button class="btn ghost" type="button" data-nav="${v}">Cuba lagi</button>`; }
+}
+
+/* ---------------- Log masuk ---------------- */
+async function mula() {
+  binaMenu();
+  if (!PIN) return tunjukLogin();
+  try { await api('login'); await masuk(); } catch (e) { tunjukLogin(e.message); }
+}
+function tunjukLogin(msg) {
+  $('#app').hidden = true; $('#login').hidden = false;
+  if (msg) { $('#loginErr').textContent = msg; $('#loginErr').hidden = false; }
+  setTimeout(() => $('#pin').focus(), 50);
+}
+async function masuk() {
+  META = await api('maklumat');
+  $('#login').hidden = true; $('#app').hidden = false;
+  pergi('utama');
+}
+function keluar() { PIN = ''; store.del('al_pin'); $('#pin').value = ''; $('#loginErr').hidden = true; tunjukLogin(); }
+
+$('#loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const b = $('#loginBtn'); b.disabled = true; b.textContent = 'Menyemak…'; $('#loginErr').hidden = true;
+  PIN = $('#pin').value.trim();
+  try { await api('login'); store.set('al_pin', PIN); await masuk(); }
+  catch (x) { PIN = ''; $('#loginErr').textContent = x.message; $('#loginErr').hidden = false; }
+  finally { b.disabled = false; b.textContent = 'Masuk'; }
+});
+
+/* ---------------- Modal ---------------- */
+const modal = $('#modal');
+function bukaModal(tajuk, isi) {
+  modal.innerHTML = `<div class="m-head"><h2 id="mTitle">${esc(tajuk)}</h2><button class="x" type="button" data-act="tutup" aria-label="Tutup">${ic('x')}</button></div><div class="m-body">${isi}</div>`;
+  if (!modal.open) modal.showModal();
+  modal.scrollTop = 0;
+}
+function tutupModal() { if (modal.open) modal.close(); }
+modal.addEventListener('click', e => { if (e.target === modal) tutupModal(); });
+
+/* ---------------- UTAMA ---------------- */
+const chipStatus = s => {
+  const c = { 'Disahkan': 'ok', 'Deposit diterima': 'dep', 'Dibatalkan': 'no', 'Selesai': 'done' }[s] || '';
+  return `<span class="chip ${c}">${esc(s || 'Tempahan baru')}</span>`;
+};
+function kadTempahan(t) {
+  const m = String(t['Tarikh Majlis'] || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const bits = [t['Servis'], t['Saiz Kek'], t['Perisa']].filter(Boolean).map(esc).join(' · ');
+  return `<button class="item" type="button" data-tempahan="${esc(t['ID'])}">
+    <div class="date"><b>${m ? +m[3] : '–'}</b><span>${m ? BLN[+m[2] - 1] : ''}</span></div>
+    <div class="mid"><b>${esc(t['Nama'])}</b><span>${bits}</span></div>${chipStatus(t['Status'])}</button>`;
+}
+
+async function viewUtama(el) {
+  const d = await api('dashboard', { bulan: bulanIni() });
+  const h = new Date().getHours();
+  const salam = h < 12 ? 'Selamat pagi.' : h < 15 ? 'Selamat tengah hari.' : h < 19 ? 'Selamat petang.' : 'Selamat malam.';
+  const now = new Date();
+  ST.cacheTempahan = d.akanDatang;
+  el.innerHTML = topBrand() + `
+  <div class="head"><div><div class="sub">${HARI[now.getDay()]}, ${now.getDate()} ${BLN_PENUH[now.getMonth()]} ${now.getFullYear()}</div><h1>${salam}</h1></div></div>
+  <section aria-label="Tindakan pantas"><h2 style="font-size:17px;margin-bottom:12px">Apa yang anda nak buat?</h2>
+    <div class="quick">
+      <button class="qa in" type="button" data-act="duitMasuk"><span class="ic">${ic('plus', 24, 2)}</span><span><b>Duit Masuk</b><span class="s">Pelanggan bayar deposit / penuh</span></span></button>
+      <button class="qa out" type="button" data-act="duitKeluar"><span class="ic">${ic('minus', 24, 2)}</span><span><b>Duit Keluar</b><span class="s">Beli bahan, bayar bil, minyak</span></span></button>
+      <button class="qa" type="button" data-act="tambahTempahan"><span class="ic">${ic('addcal', 24)}</span><span><b>Tambah Tempahan</b><span class="s">Pelanggan tempah melalui telefon</span></span></button>
+      <button class="qa" type="button" data-nav="gaji"><span class="ic">${ic('gaji', 24)}</span><span><b>Jana Slip Gaji</b><span class="s">Sekali tekan, siap PDF</span></span></button>
+    </div>
+  </section>
+  <section class="grid-stats" aria-label="Ringkasan bulan ini">
+    <div class="card stat"><span class="l">Tempahan bulan ini</span><span class="v">${d.bilTempahan}</span><span class="l">${d.bilKek} kek · ${d.bilMeja} sewaan meja</span></div>
+    <div class="card stat"><span class="l">Duit masuk (${BLN[+d.bulan.slice(5) - 1]})</span><span class="v" style="color:var(--sage)">${rm(d.masuk, 0)}</span></div>
+    <div class="card stat"><span class="l">Duit keluar (${BLN[+d.bulan.slice(5) - 1]})</span><span class="v" style="color:var(--rose)">${rm(d.keluar, 0)}</span></div>
+    <div class="card stat dark"><span class="l">Baki bersih</span><span class="v">${rm(d.baki, 0)}</span>${d.tempahanBaru ? `<span class="l">${d.tempahanBaru} tempahan baru belum disemak</span>` : ''}</div>
+  </section>
+  <div class="cols">
+    <section class="main" aria-label="Tempahan akan datang">
+      <div class="sec-h"><h2>Tempahan akan datang</h2><button class="btn ghost small" type="button" data-nav="tempahan">Lihat semua</button></div>
+      <div class="list">${d.akanDatang.length ? d.akanDatang.map(kadTempahan).join('') : '<div class="empty">Belum ada tempahan akan datang.</div>'}</div>
+    </section>
+    <div class="aside">
+      <section class="linkbox" aria-label="Pautan borang tempahan">
+        <h2 style="font-size:16px;color:var(--rose-dark)">Pautan borang tempahan</h2>
+        <div style="font-size:13px;color:#5B4A4C">Hantar pautan ini kepada pelanggan melalui WhatsApp atau Instagram.</div>
+        <div class="url">${esc(LINK_BORANG.replace(/^https?:\/\//, ''))}</div>
+        <div class="row-btn"><button class="btn ghost small" type="button" data-act="salinLink">Salin pautan</button>
+        <a class="btn small" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent('Assalamualaikum! Tempahan kek & sewaan meja Amrina Legacy boleh dibuat di sini: ' + LINK_BORANG)}">WhatsApp</a></div>
+      </section>
+      <section class="card pad" aria-label="Gaji bulan ini" style="display:flex;flex-direction:column;gap:12px">
+        <div class="sec-h" style="margin:0"><h2 style="font-size:16px">Gaji ${BLN_PENUH[now.getMonth()]}</h2></div>
+        ${d.pekerja.length ? d.pekerja.map(p => `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:10px;border-top:1px solid var(--line-faint)">
+          <div style="min-width:0"><div style="font-weight:700">${esc(p.nama)}</div><div style="font-size:12px;color:var(--muted)">${esc(p.jenis)}${p.jawatan ? ' · ' + esc(p.jawatan) : ''}</div></div>
+          <span class="chip ${p.sudahDijana ? 'ok' : ''}">${p.sudahDijana ? 'Siap' : 'Belum'}</span></div>`).join('') : '<div style="color:var(--muted);font-size:14px">Belum ada pekerja. Tambah di menu Pekerja.</div>'}
+        <button class="btn dark" type="button" data-nav="gaji">Jana slip gaji</button>
+      </section>
+    </div>
+  </div>`;
+}
+
+/* ---------------- TEMPAHAN ---------------- */
+async function viewTempahan(el) {
+  const rows = await api('senaraiTempahan', { bulan: ST.bulanTempahan });
+  ST.cacheTempahan = rows;
+  const status = ['Semua'].concat(META.statusTempahan || []);
+  const tapis = ST.tapisStatus === 'Semua' ? rows : rows.filter(r => r['Status'] === ST.tapisStatus);
+  tapis.sort((a, b) => String(a['Tarikh Majlis']).localeCompare(String(b['Tarikh Majlis'])));
+  el.innerHTML = topBrand() + `
+  <div class="head"><div><div class="sub">Ikut tarikh majlis</div><h1>Tempahan</h1></div>
+    <button class="btn" type="button" data-act="tambahTempahan">${ic('plus', 18, 2.2)} Tambah Tempahan</button></div>
+  <div class="tools"><label class="sr" style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px">Bulan
+    <input class="month" type="month" value="${ST.bulanTempahan}" data-month="bulanTempahan"></label></div>
+  <div class="tabs" role="group" aria-label="Tapis status">${status.map(s => `<button type="button" aria-pressed="${s === ST.tapisStatus}" data-tapisstatus="${esc(s)}">${esc(s)}</button>`).join('')}</div>
+  <div class="list">${tapis.length ? tapis.map(kadTempahan).join('') : '<div class="empty">Tiada tempahan untuk bulan ini.</div>'}</div>
+  <div class="note">Tip: Tekan mana-mana tempahan untuk tukar status, masukkan harga, atau WhatsApp pelanggan.</div>`;
+}
+
+function bukaTempahan(id) {
+  const t = (ST.cacheTempahan || []).find(x => x['ID'] === id);
+  if (!t) return;
+  const wa = waNo(t['No. Telefon']);
+  const baris = [['No. rujukan', t['ID']], ['Telefon', t['No. Telefon']], ['Servis', t['Servis']], ['Tarikh majlis', tkh(t['Tarikh Majlis'])],
+    ['Masa', t['Masa']], ['Lokasi', t['Lokasi']], ['Saiz kek', t['Saiz Kek']], ['Perisa', t['Perisa']], ['Tulisan', t['Tulisan Atas Kek']], ['Catatan', t['Catatan']]]
+    .filter(r => r[1]).map(([k, v]) => `<dt>${k}</dt><dd>${k === 'Tarikh majlis' ? v : esc(v)}</dd>`).join('');
+  bukaModal(t['Nama'], `
+    <dl class="kv">${baris}</dl>
+    ${t['Pautan Resit Deposit'] ? `<a class="btn ghost" href="${esc(t['Pautan Resit Deposit'])}" target="_blank" rel="noopener">Lihat resit deposit</a>` : '<div class="note">Pelanggan belum muat naik resit.</div>'}
+    ${wa ? `<a class="btn green" href="https://wa.me/${wa}?text=${encodeURIComponent('Assalamualaikum ' + t['Nama'] + ', ini Amrina Legacy berkenaan tempahan anda (' + t['ID'] + ').')}" target="_blank" rel="noopener">WhatsApp pelanggan</a>` : ''}
+    <form id="fTempahan" style="display:flex;flex-direction:column;gap:14px;border-top:1px solid var(--line-soft);padding-top:16px">
+      <label class="f">Status<select name="status">${(META.statusTempahan || []).map(s => `<option ${s === t['Status'] ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select></label>
+      <div class="two">
+        <label class="f">Harga penuh (RM)<input name="harga" inputmode="decimal" value="${esc(t['Harga (RM)'])}"></label>
+        <label class="f">Deposit diterima (RM)<input name="deposit" inputmode="decimal" value="${esc(t['Deposit (RM)'])}"></label>
+      </div>
+      ${t['Harga (RM)'] !== '' && t['Harga (RM)'] !== undefined ? `<div class="note">Baki perlu dibayar: <b>${rm(num(t['Harga (RM)']) - num(t['Deposit (RM)']))}</b></div>` : ''}
+      <div class="err" hidden></div>
+      <button class="btn dark" type="submit">Simpan perubahan</button>
+    </form>`);
+  $('#fTempahan').addEventListener('submit', async e => {
+    e.preventDefault(); const f = e.target; const b = f.querySelector('button[type=submit]'); const er = f.querySelector('.err');
+    b.disabled = true; b.textContent = 'Menyimpan…'; er.hidden = true;
+    try { await api('kemaskiniTempahan', { id, status: f.status.value, harga: f.harga.value, deposit: f.deposit.value }); tutupModal(); toast('Tempahan dikemas kini ✓'); pergi(VIEW); }
+    catch (x) { er.textContent = x.message; er.hidden = false; b.disabled = false; b.textContent = 'Simpan perubahan'; }
+  });
+}
+
+function borangTempahanBaru() {
+  bukaModal('Tambah Tempahan', `<form id="fTB" style="display:flex;flex-direction:column;gap:14px">
+    <div class="f">Servis<div class="chips" data-pilih="servis">${(META.servis || []).map((s, i) => `<button type="button" aria-pressed="${i === 0}" data-v="${esc(s)}">${esc(s)}</button>`).join('')}</div></div>
+    <label class="f">Nama pelanggan<input name="nama" required maxlength="80"></label>
+    <label class="f">No. telefon<input name="telefon" type="tel" inputmode="tel" required maxlength="20"></label>
+    <div class="two"><label class="f">Tarikh majlis<input name="tarikhMajlis" type="date" required value="${hariIni()}"></label>
+      <label class="f">Masa<input name="masa" type="time"></label></div>
+    <label class="f">Lokasi<input name="lokasi" maxlength="200"></label>
+    <div class="two"><label class="f">Saiz kek<input name="saiz" maxlength="40"></label><label class="f">Perisa<input name="perisa" maxlength="60"></label></div>
+    <label class="f">Tulisan atas kek<input name="tulisan" maxlength="80"></label>
+    <label class="f">Catatan<textarea name="catatan" maxlength="500"></textarea></label>
+    <div class="two"><label class="f">Harga (RM)<input name="harga" inputmode="decimal"></label><label class="f">Deposit (RM)<input name="deposit" inputmode="decimal"></label></div>
+    <div class="err" hidden></div>
+    <button class="btn" type="submit">Simpan Tempahan</button></form>`);
+  $('#fTB').addEventListener('submit', async e => {
+    e.preventDefault(); const f = e.target; const b = f.querySelector('button[type=submit]'); const er = f.querySelector('.err');
+    const servis = (f.querySelector('[data-pilih=servis] [aria-pressed=true]') || {}).dataset?.v || '';
+    const data = { servis }; ['nama', 'telefon', 'tarikhMajlis', 'masa', 'lokasi', 'saiz', 'perisa', 'tulisan', 'catatan', 'harga', 'deposit'].forEach(k => data[k] = f[k].value.trim());
+    data.status = num(data.deposit) > 0 ? 'Deposit diterima' : 'Tempahan baru';
+    b.disabled = true; b.textContent = 'Menyimpan…'; er.hidden = true;
+    try { await api('tambahTempahan', data); tutupModal(); toast('Tempahan disimpan ✓'); pergi(VIEW === 'tempahan' ? 'tempahan' : 'utama'); }
+    catch (x) { er.textContent = x.message; er.hidden = false; b.disabled = false; b.textContent = 'Simpan Tempahan'; }
+  });
+}
+
+/* ---------------- DUIT (Cashflow) ---------------- */
+async function viewDuit(el) {
+  const rows = await api('senaraiCashflow', { bulan: ST.bulanDuit });
+  const masuk = rows.filter(r => r['Jenis'] === 'Masuk').reduce((s, r) => s + num(r['Jumlah (RM)']), 0);
+  const keluar = rows.filter(r => r['Jenis'] === 'Keluar').reduce((s, r) => s + num(r['Jumlah (RM)']), 0);
+  const ikutKat = {};
+  rows.filter(r => r['Jenis'] === 'Keluar').forEach(r => { ikutKat[r['Kategori']] = (ikutKat[r['Kategori']] || 0) + num(r['Jumlah (RM)']); });
+  const kat = Object.entries(ikutKat).sort((a, b) => b[1] - a[1]);
+  const maxK = kat.length ? kat[0][1] : 1;
+  el.innerHTML = topBrand() + `
+  <div class="head"><div><div class="sub">Akaun syarikat</div><h1>Cashflow</h1></div>
+    <div class="tools"><button class="btn green" type="button" data-act="duitMasuk">${ic('plus', 18, 2.2)} Duit Masuk</button>
+    <button class="btn" type="button" data-act="duitKeluar">${ic('minus', 18, 2.2)} Duit Keluar</button></div></div>
+  <div class="tools"><label style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px">Bulan
+    <input class="month" type="month" value="${ST.bulanDuit}" data-month="bulanDuit"></label></div>
+  <section class="grid-stats" aria-label="Ringkasan">
+    <div class="card stat"><span class="l">Duit masuk</span><span class="v" style="color:var(--sage)">${rm(masuk)}</span></div>
+    <div class="card stat"><span class="l">Duit keluar</span><span class="v" style="color:var(--rose)">${rm(keluar)}</span></div>
+    <div class="card stat dark"><span class="l">Baki bersih ${esc(namaBulan(ST.bulanDuit))}</span><span class="v">${rm(masuk - keluar)}</span></div>
+  </section>
+  <div class="cols">
+    <section class="main" aria-label="Senarai transaksi"><div class="sec-h"><h2>Transaksi</h2></div>
+      <div class="list">${rows.length ? rows.map(r => `<div class="item" style="cursor:default">
+        <div class="date"><b>${+String(r['Tarikh']).slice(8, 10) || '–'}</b><span>${BLN[+String(r['Tarikh']).slice(5, 7) - 1] || ''}</span></div>
+        <div class="mid"><b>${esc(r['Perkara'] || r['Kategori'])}</b><span>${esc(r['Kategori'])}${r['Pautan Resit'] ? ` · <a href="${esc(r['Pautan Resit'])}" target="_blank" rel="noopener">resit</a>` : ''}</span></div>
+        <span class="${r['Jenis'] === 'Masuk' ? 'amt-in' : 'amt-out'}">${r['Jenis'] === 'Masuk' ? '+' : '−'} ${rm(r['Jumlah (RM)']).replace('RM ', '')}</span></div>`).join('')
+        : '<div class="empty">Belum ada rekod untuk bulan ini. Tekan “Duit Masuk” atau “Duit Keluar”.</div>'}</div></section>
+    <section class="aside card pad" aria-label="Duit keluar ikut kategori" style="gap:14px">
+      <h2 style="font-size:16px">Duit keluar ikut kategori</h2>
+      ${kat.length ? kat.map(([k, v]) => `<div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;font-size:13px"><span>${esc(k)}</span><b>${rm(v, 0)}</b></div>
+        <div style="height:8px;border-radius:999px;background:var(--grey-soft)"><div style="width:${Math.max(4, v / maxK * 100)}%;height:8px;border-radius:999px;background:var(--rose)"></div></div></div>`).join('') : '<div style="color:var(--muted);font-size:14px">Tiada duit keluar lagi bulan ini.</div>'}
+      <div style="font-size:12px;color:var(--muted);border-top:1px solid var(--line-faint);padding-top:10px">Nak betulkan rekod yang salah? Buka Google Sheet, tab “Cashflow”.</div>
+    </section>
+  </div>`;
+}
+
+function borangDuit(jenis) {
+  const kat = META.kategori || [];
+  bukaModal('Rekod Duit', `<form id="fDuit" style="display:flex;flex-direction:column;gap:18px">
+    <div class="seg green" role="group" aria-label="Jenis" data-pilih="jenis">
+      <button type="button" data-v="Masuk" aria-pressed="${jenis === 'Masuk'}">Duit Masuk</button>
+      <button type="button" data-v="Keluar" aria-pressed="${jenis !== 'Masuk'}">Duit Keluar</button></div>
+    <label class="f">Berapa ringgit?<div class="money"><span>RM</span><input name="jumlah" inputmode="decimal" placeholder="0.00" autocomplete="off" required></div></label>
+    <div class="f">Untuk apa?<div class="chips" data-pilih="kategori">${kat.map(k => `<button type="button" aria-pressed="false" data-v="${esc(k)}">${esc(k)}</button>`).join('')}</div></div>
+    <label class="f">Tarikh<input name="tarikh" type="date" value="${hariIni()}"><span class="h">Sudah diisi tarikh hari ini secara automatik.</span></label>
+    <label class="f">Catatan (tak wajib)<input name="perkara" maxlength="200" placeholder="cth: Beli tepung & mentega"></label>
+    <label class="f">No. rujukan tempahan (tak wajib)<input name="rujukan" maxlength="20" placeholder="cth: T2610131200"></label>
+    <label class="upload">${ic('camera', 22)}<span data-namafail>Ambil gambar resit (tak wajib)</span><input type="file" name="resit" accept="image/*,application/pdf"></label>
+    <div class="err" hidden></div>
+    <button class="btn dark" type="submit" style="min-height:58px;font-size:17px">Simpan</button></form>`);
+  setTimeout(() => $('#fDuit [name=jumlah]').focus(), 60);
+  $('#fDuit').addEventListener('submit', async e => {
+    e.preventDefault(); const f = e.target; const b = f.querySelector('button[type=submit]'); const er = f.querySelector('.err');
+    const pilih = k => (f.querySelector(`[data-pilih=${k}] [aria-pressed=true]`) || {}).dataset?.v || '';
+    const data = { jenis: pilih('jenis'), kategori: pilih('kategori'), jumlah: f.jumlah.value, tarikh: f.tarikh.value, perkara: f.perkara.value.trim(), rujukan: f.rujukan.value.trim() };
+    if (!(num(data.jumlah) > 0)) { er.textContent = 'Sila masukkan jumlah ringgit.'; er.hidden = false; return; }
+    if (!data.kategori) { er.textContent = 'Sila pilih “Untuk apa?”.'; er.hidden = false; return; }
+    b.disabled = true; b.textContent = 'Menyimpan…'; er.hidden = true;
+    try { data.resit = await bacaFail(f.resit.files[0]); await api('tambahCashflow', data); tutupModal(); toast('Rekod duit disimpan ✓'); pergi(VIEW); }
+    catch (x) { er.textContent = x.message; er.hidden = false; b.disabled = false; b.textContent = 'Simpan'; }
+  });
+}
+
+function bacaFail(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) return resolve(null);
+    if (file.type === 'application/pdf') {
+      if (file.size > 5 * 1024 * 1024) return reject(new Error('Fail PDF terlalu besar (maksimum 5MB).'));
+      const r = new FileReader(); r.onload = () => resolve({ name: file.name, type: file.type, base64: String(r.result).split(',')[1] });
+      r.onerror = () => reject(new Error('Tak dapat baca fail.')); return r.readAsDataURL(file);
+    }
+    if (!/^image\//.test(file.type)) return reject(new Error('Resit mesti gambar atau PDF.'));
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const s = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      resolve({ name: 'resit.jpg', type: 'image/jpeg', base64: c.toDataURL('image/jpeg', 0.82).split(',')[1] });
+    };
+    img.onerror = () => reject(new Error('Gambar tidak dapat dibuka. Cuba gambar lain.')); img.src = url;
+  });
+}
+
+/* ---------------- PEKERJA ---------------- */
+async function viewPekerja(el) {
+  const semua = (await api('senaraiPekerja')).filter(p => p['Status'] !== 'Berhenti');
+  ST.cachePekerja = semua;
+  const tetap = semua.filter(p => p['Jenis'] === 'Staf Tetap'), pt = semua.filter(p => p['Jenis'] === 'Part-timer');
+  const t = ST.tapisPekerja;
+  const kad = p => {
+    const isPT = p['Jenis'] === 'Part-timer';
+    const ini = String(p['Nama Penuh'] || '?').split(/\s+/).filter(w => !/^(bin|binti|bt|b\.|a\/l|a\/p)$/i.test(w)).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    return `<div class="card" style="padding:16px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:14px 20px">
+      <div aria-hidden="true" style="width:46px;height:46px;border-radius:50%;background:${isPT ? 'var(--amber-soft)' : 'var(--rose-soft)'};color:${isPT ? 'var(--amber)' : 'var(--rose)'};display:flex;align-items:center;justify-content:center;font-weight:700">${esc(ini)}</div>
+      <div style="flex:1 1 200px;min-width:0"><div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><b style="font-size:16px">${esc(p['Nama Penuh'])}</b><span class="chip ${isPT ? 'pt' : 'st'}">${isPT ? 'PART-TIMER' : 'STAF TETAP'}</span></div>
+        <div style="font-size:13px;color:var(--body)">${esc(p['Jawatan'] || '—')}</div></div>
+      <div style="flex:0 1 170px"><div style="font-size:12px;color:var(--muted)">${isPT ? 'Kadar elaun' : 'Gaji pokok'}</div>
+        <b>${isPT ? `${rm(p['Kadar Elaun (RM)'], 0)} / ${esc(String(p['Kiraan Elaun'] || 'hari').toLowerCase())}` : `${rm(p['Gaji Pokok (RM)'], 0)} / bulan`}</b></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost small" type="button" data-editpekerja="${esc(p['ID'])}">Ubah</button>
+        ${isPT ? `<button class="btn small" type="button" data-rekodkerja="${esc(p['ID'])}">+ Rekod kerja</button>` : ''}</div></div>`;
+  };
+  const sek = (tajuk, ket, arr) => arr.length ? `<section style="display:flex;flex-direction:column;gap:10px"><div style="display:flex;flex-wrap:wrap;gap:10px;align-items:baseline"><h2 style="font-size:17px">${tajuk}</h2><span style="font-size:13px;color:var(--body)">${ket}</span></div>${arr.map(kad).join('')}</section>` : '';
+  el.innerHTML = topBrand() + `
+  <div class="head"><div><div class="sub">${semua.length} orang pekerja aktif</div><h1>Pekerja</h1></div>
+    <button class="btn" type="button" data-act="tambahPekerja">${ic('plus', 18, 2.2)} Tambah Pekerja</button></div>
+  <div class="tabs" role="group" aria-label="Tapis jenis">${[['Semua', semua.length], ['Staf Tetap', tetap.length], ['Part-timer', pt.length]].map(([k, n]) => `<button type="button" aria-pressed="${t === k}" data-tapispekerja="${k}">${k} (${n})</button>`).join('')}</div>
+  ${semua.length ? '' : '<div class="empty">Belum ada pekerja. Tekan “Tambah Pekerja” untuk mula.</div>'}
+  ${t !== 'Part-timer' ? sek('Staf Tetap', 'Gaji bulanan tetap · dapat <b>Slip Gaji</b>', tetap) : ''}
+  ${t !== 'Staf Tetap' ? sek('Part-timer', 'Elaun ikut hari / majlis / jam · dapat <b>Penyata Elaun</b>', pt) : ''}
+  <div class="note">Tip: Untuk part-timer, tekan <b>+ Rekod kerja</b> setiap kali mereka bekerja. Hujung bulan, elaun dikira automatik di menu Gaji.</div>`;
+}
+
+function borangPekerja(id) {
+  const p = id ? (ST.cachePekerja || []).find(x => x['ID'] === id) || {} : { 'Jenis': 'Staf Tetap', 'Caruman KWSP/PERKESO': 'Ya', 'Kiraan Elaun': 'Majlis' };
+  const v = k => esc(p[k] ?? '');
+  const isPT = p['Jenis'] === 'Part-timer';
+  bukaModal(id ? 'Ubah Maklumat Pekerja' : 'Tambah Pekerja', `<form id="fPek" style="display:flex;flex-direction:column;gap:16px">
+    <div class="f">Jenis pekerja
+      <label class="opt"><input type="radio" name="Jenis" value="Staf Tetap" ${!isPT ? 'checked' : ''}><span><b>Staf Tetap</b><span>Gaji sama setiap bulan. Dapat Slip Gaji.</span></span></label>
+      <label class="opt"><input type="radio" name="Jenis" value="Part-timer" ${isPT ? 'checked' : ''}><span><b>Part-timer</b><span>Dibayar elaun ikut kerja yang dibuat. Dapat Penyata Elaun.</span></span></label></div>
+    <label class="f">Nama penuh (ikut IC)<input name="Nama Penuh" required maxlength="80" value="${v('Nama Penuh')}"></label>
+    <div class="two"><label class="f">No. Kad Pengenalan<input name="No. KP" inputmode="numeric" maxlength="14" placeholder="000000-00-0000" value="${v('No. KP')}"></label>
+      <label class="f">No. telefon<input name="No. Telefon" type="tel" maxlength="20" value="${v('No. Telefon')}"></label></div>
+    <label class="f">Tugas / jawatan<input name="Jawatan" maxlength="60" placeholder="cth: Pembantu Pastri" value="${v('Jawatan')}"></label>
+    <div data-tetap ${isPT ? 'hidden' : ''} class="two"><label class="f">Gaji pokok sebulan (RM)<input name="Gaji Pokok (RM)" inputmode="decimal" value="${v('Gaji Pokok (RM)')}"></label>
+      <label class="f">Elaun tetap sebulan (RM)<input name="Elaun Tetap (RM)" inputmode="decimal" value="${v('Elaun Tetap (RM)')}"></label></div>
+    <div data-pt ${isPT ? '' : 'hidden'} style="display:flex;flex-direction:column;gap:14px">
+      <div class="f">Elaun dikira ikut<div class="seg three" data-pilih="kiraan">${['Hari', 'Majlis', 'Jam'].map(k => `<button type="button" data-v="${k}" aria-pressed="${(p['Kiraan Elaun'] || 'Majlis') === k}">${k}</button>`).join('')}</div></div>
+      <label class="f">Kadar elaun (RM)<input name="Kadar Elaun (RM)" inputmode="decimal" value="${v('Kadar Elaun (RM)')}"></label>
+      <label class="f">Elaun tetap sebulan, cth. pengangkutan (RM, tak wajib)<input name="Elaun Tetap PT" inputmode="decimal" value="${isPT ? v('Elaun Tetap (RM)') : ''}"></label></div>
+    <label class="opt" style="background:var(--grey-soft);border-color:var(--grey-soft)"><input type="checkbox" name="carum" ${p['Caruman KWSP/PERKESO'] !== 'Tidak' ? 'checked' : ''}><span><b>Potong caruman KWSP, PERKESO &amp; SIP</b><span>Biasanya wajib, termasuk untuk part-timer. Semak dengan KWSP / PERKESO jika tidak pasti.</span></span></label>
+    <div class="two"><label class="f">No. KWSP<input name="No. KWSP" maxlength="20" value="${v('No. KWSP')}"></label><label class="f">No. PERKESO<input name="No. PERKESO" maxlength="20" value="${v('No. PERKESO')}"></label></div>
+    <label class="f">No. cukai (LHDN), jika ada<input name="No. Cukai" maxlength="20" value="${v('No. Cukai')}"></label>
+    <div class="two"><label class="f">Bank<select name="Bank">${['', 'Maybank', 'Bank Islam', 'CIMB', 'BSN', 'Bank Rakyat', 'RHB', 'Public Bank', 'Agrobank', 'Lain-lain'].map(b => `<option ${b === (p['Bank'] || '') ? 'selected' : ''}>${b}</option>`).join('')}</select></label>
+      <label class="f">No. akaun<input name="No. Akaun" inputmode="numeric" maxlength="20" value="${v('No. Akaun')}"></label></div>
+    <div class="two"><label class="f">Tarikh mula kerja<input name="Tarikh Mula" type="date" value="${v('Tarikh Mula')}"></label>
+      ${id ? `<label class="f">Status<select name="Status"><option ${p['Status'] !== 'Berhenti' ? 'selected' : ''}>Aktif</option><option ${p['Status'] === 'Berhenti' ? 'selected' : ''}>Berhenti</option></select></label>` : '<span></span>'}</div>
+    <div class="err" hidden></div>
+    <button class="btn dark" type="submit" style="min-height:56px">Simpan Pekerja</button></form>`);
+  const f = $('#fPek');
+  f.addEventListener('change', e => { if (e.target.name === 'Jenis') { const pt = e.target.value === 'Part-timer'; f.querySelector('[data-pt]').hidden = !pt; f.querySelector('[data-tetap]').hidden = pt; } });
+  f.addEventListener('submit', async e => {
+    e.preventDefault(); const b = f.querySelector('button[type=submit]'); const er = f.querySelector('.err');
+    const jenis = f.querySelector('[name=Jenis]:checked').value, pt = jenis === 'Part-timer';
+    const g = n => (f.elements[n] ? f.elements[n].value.trim() : '');
+    const pek = { 'Jenis': jenis, 'Nama Penuh': g('Nama Penuh'), 'No. KP': g('No. KP'), 'No. Telefon': g('No. Telefon'), 'Jawatan': g('Jawatan'),
+      'Gaji Pokok (RM)': pt ? '' : g('Gaji Pokok (RM)'), 'Elaun Tetap (RM)': pt ? g('Elaun Tetap PT') : g('Elaun Tetap (RM)'),
+      'Kiraan Elaun': pt ? ((f.querySelector('[data-pilih=kiraan] [aria-pressed=true]') || {}).dataset?.v || 'Majlis') : '',
+      'Kadar Elaun (RM)': pt ? g('Kadar Elaun (RM)') : '', 'Caruman KWSP/PERKESO': f.carum.checked ? 'Ya' : 'Tidak',
+      'No. KWSP': g('No. KWSP'), 'No. PERKESO': g('No. PERKESO'), 'No. Cukai': g('No. Cukai'), 'Bank': g('Bank'), 'No. Akaun': g('No. Akaun'), 'Tarikh Mula': g('Tarikh Mula') };
+    if (f.elements['Status']) pek['Status'] = g('Status');
+    if (!pek['Nama Penuh']) { er.textContent = 'Sila isi nama penuh.'; er.hidden = false; return; }
+    if (!pt && !(num(pek['Gaji Pokok (RM)']) > 0)) { er.textContent = 'Sila isi gaji pokok.'; er.hidden = false; return; }
+    if (pt && !(num(pek['Kadar Elaun (RM)']) > 0)) { er.textContent = 'Sila isi kadar elaun.'; er.hidden = false; return; }
+    b.disabled = true; b.textContent = 'Menyimpan…'; er.hidden = true;
+    try { await api('simpanPekerja', { id, pekerja: pek }); tutupModal(); toast('Maklumat pekerja disimpan ✓'); pergi('pekerja'); }
+    catch (x) { er.textContent = x.message; er.hidden = false; b.disabled = false; b.textContent = 'Simpan Pekerja'; }
+  });
+}
+
+async function borangRekodKerja(id) {
+  const p = (ST.cachePekerja || []).find(x => x['ID'] === id); if (!p) return;
+  const unitNama = String(p['Kiraan Elaun'] || 'Hari').toLowerCase();
+  bukaModal('Rekod Kerja · ' + p['Nama Penuh'], '<div class="loading">Sedang memuatkan…</div>');
+  let rek = [];
+  try { rek = await api('senaraiRekodKerja', { bulan: bulanIni(), idPekerja: id }); } catch (e) {}
+  const jum = rek.reduce((s, r) => s + num(r['Jumlah (RM)']), 0);
+  bukaModal('Rekod Kerja · ' + p['Nama Penuh'], `<form id="fRK" style="display:flex;flex-direction:column;gap:14px">
+    <label class="f">Tarikh<input name="tarikh" type="date" value="${hariIni()}"></label>
+    <label class="f">Kerja / majlis<input name="perkara" maxlength="120" placeholder="cth: Hantar & pasang meja · Majlis Encik Faiz"></label>
+    <div class="two"><label class="f">Bilangan ${esc(unitNama)}<input name="unit" inputmode="decimal" value="1"></label>
+      <label class="f">Kadar (RM)<input name="kadar" inputmode="decimal" value="${esc(p['Kadar Elaun (RM)'])}"></label></div>
+    <div class="err" hidden></div>
+    <button class="btn" type="submit">Simpan Rekod</button></form>
+    <section style="border-top:1px solid var(--line-soft);padding-top:14px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between"><b>Bulan ini</b><b>${rm(jum)}</b></div>
+      ${rek.length ? rek.map(r => `<div style="display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:8px 0;border-bottom:1px solid var(--line-faint)"><span>${tkh(r['Tarikh'])} · ${esc(r['Kerja / Majlis'] || '—')}</span><b>${rm(r['Jumlah (RM)'])}</b></div>`).join('') : '<div style="color:var(--muted);font-size:14px">Belum ada rekod bulan ini.</div>'}
+    </section>`);
+  $('#fRK').addEventListener('submit', async e => {
+    e.preventDefault(); const f = e.target; const b = f.querySelector('button[type=submit]'); const er = f.querySelector('.err');
+    b.disabled = true; b.textContent = 'Menyimpan…'; er.hidden = true;
+    try { await api('tambahRekodKerja', { idPekerja: id, tarikh: f.tarikh.value, perkara: f.perkara.value.trim(), unit: f.unit.value, kadar: f.kadar.value }); toast('Rekod kerja disimpan ✓'); borangRekodKerja(id); }
+    catch (x) { er.textContent = x.message; er.hidden = false; b.disabled = false; b.textContent = 'Simpan Rekod'; }
+  });
+}
+
+/* ---------------- GAJI ---------------- */
+async function viewGaji(el) {
+  const [pek, gaji] = await Promise.all([api('senaraiPekerja'), api('senaraiGaji', { bulan: ST.bulanGaji })]);
+  const aktif = pek.filter(p => p['Status'] !== 'Berhenti');
+  el.innerHTML = topBrand() + `
+  <div class="head"><div><div class="sub">Slip gaji staf tetap &amp; penyata elaun part-timer</div><h1>Gaji</h1></div></div>
+  <div class="tools"><label style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px">Bulan
+    <input class="month" type="month" value="${ST.bulanGaji}" data-month="bulanGaji"></label></div>
+  <div class="list">${aktif.length ? aktif.map(p => {
+    const g = gaji.find(x => x['ID Pekerja'] === p['ID']);
+    return `<div class="card" style="padding:16px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px">
+      <div style="flex:1 1 220px;min-width:0"><b style="font-size:16px">${esc(p['Nama Penuh'])}</b>
+        <div style="font-size:13px;color:var(--body)">${esc(p['Jenis'])}${p['Jawatan'] ? ' · ' + esc(p['Jawatan']) : ''}</div></div>
+      ${g ? `<div style="flex:0 1 180px"><div style="font-size:12px;color:var(--muted)">Bersih · ${esc(g['No. Rujukan'])}</div><b>${rm(g['Gaji / Elaun Bersih (RM)'])}</b></div>` : '<span class="chip">Belum dijana</span>'}
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${g ? `<button class="btn dark small" type="button" data-lihatslip="${esc(g['No. Rujukan'])}">Lihat slip</button>
+        <button class="btn ghost small" type="button" data-janagaji="${esc(p['ID'])}">Kira semula</button>` : `<button class="btn small" type="button" data-janagaji="${esc(p['ID'])}">Jana ${p['Jenis'] === 'Part-timer' ? 'penyata' : 'slip'}</button>`}</div></div>`;
+  }).join('') : '<div class="empty">Belum ada pekerja aktif. Tambah di menu Pekerja.</div>'}</div>
+  <div class="note"><b>Penting:</b> Angka KWSP, PERKESO &amp; SIP dikira sebagai <b>anggaran</b>. Semak dengan jadual rasmi sebelum simpan. PCB (cukai bulanan) isi sendiri ikut kalkulator e-PCB LHDN.</div>`;
+}
+
+async function janaGaji(id) {
+  bukaModal('Kira Gaji', '<div class="loading">Sedang mengira…</div>');
+  let d;
+  try { d = await api('kiraGaji', { idPekerja: id, bulan: ST.bulanGaji }); }
+  catch (x) { bukaModal('Kira Gaji', `<div class="err">${esc(x.message)}</div>`); return; }
+  const isPT = d.pekerja.jenis === 'Part-timer';
+  const akhirBulan = (() => { const [y, m] = d.bulan.split('-').map(Number); const t = new Date(y, m, 0); return `${y}-${String(m).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`; })();
+  bukaModal((isPT ? 'Penyata Elaun · ' : 'Slip Gaji · ') + d.pekerja.nama, `<form id="fGaji" style="display:flex;flex-direction:column;gap:16px">
+    <div class="note">${esc(namaBulan(d.bulan))} · ${esc(d.pekerja.jenis)}${isPT && !d.items.length ? '<br><b>Tiada rekod kerja bulan ini.</b> Tambah di menu Pekerja &gt; + Rekod kerja, atau masukkan item di bawah.' : ''}</div>
+    <div class="f">Pendapatan / elaun<div id="items" style="display:flex;flex-direction:column;gap:8px"></div>
+      <button class="btn ghost small" type="button" id="tambahItem" style="align-self:flex-start">+ Tambah item (OT, bonus, komisen)</button></div>
+    <div class="total" style="background:var(--grey-soft);color:var(--ink)"><span>Jumlah pendapatan</span><b id="tKasar"></b></div>
+    <div class="f">Potongan pekerja (RM) <span class="h">Anggaran. Boleh diubah.</span>
+      <div class="two"><label class="f">KWSP<input name="pkwsp" inputmode="decimal" value="${d.potongan.kwsp}"></label><label class="f">PERKESO<input name="pperkeso" inputmode="decimal" value="${d.potongan.perkeso}"></label>
+      <label class="f">SIP / EIS<input name="psip" inputmode="decimal" value="${d.potongan.sip}"></label><label class="f">PCB<input name="ppcb" inputmode="decimal" value="${d.potongan.pcb}"></label></div></div>
+    <div class="f">Caruman majikan (RM) <span class="h">Tidak ditolak daripada gaji pekerja.</span>
+      <div class="two"><label class="f">KWSP<input name="mkwsp" inputmode="decimal" value="${d.majikan.kwsp}"></label><label class="f">PERKESO<input name="mperkeso" inputmode="decimal" value="${d.majikan.perkeso}"></label>
+      <label class="f">SIP / EIS<input name="msip" inputmode="decimal" value="${d.majikan.sip}"></label><span></span></div></div>
+    <label class="f">Tarikh bayar<input name="tarikhBayar" type="date" value="${akhirBulan}"></label>
+    <div class="total"><span>${isPT ? 'Elaun bersih' : 'Gaji bersih'}</span><b id="tBersih"></b></div>
+    <div class="err" hidden></div>
+    <button class="btn" type="submit" style="min-height:56px">Simpan &amp; jana ${isPT ? 'penyata' : 'slip'}</button></form>`);
+  const box = $('#items'), f = $('#fGaji');
+  const baris = it => {
+    const r = document.createElement('div'); r.className = 'itemrow';
+    r.innerHTML = `<input aria-label="Perkara" value="${esc(it.perkara)}" data-k="perkara"><input aria-label="Jumlah RM" inputmode="decimal" value="${it.jumlah ?? ''}" data-k="jumlah"><button class="del" type="button" aria-label="Buang item">×</button>`;
+    r._meta = { tarikh: it.tarikh || '', unit: it.unit || '', kadar: it.kadar || '' };
+    if (it.tarikh) r.querySelector('[data-k=perkara]').title = tkhSlip(it.tarikh);
+    box.appendChild(r);
+  };
+  d.items.forEach(it => baris({ ...it, perkara: it.tarikh ? `${tkhSlip(it.tarikh).slice(0, 5)} · ${it.perkara || ''}` : it.perkara }));
+  if (!d.items.length && !isPT) baris({ perkara: 'Gaji pokok', jumlah: '' });
+  const kira = () => {
+    const kasar = [...box.children].reduce((s, r) => s + num(r.querySelector('[data-k=jumlah]').value), 0);
+    const pot = ['pkwsp', 'pperkeso', 'psip', 'ppcb'].reduce((s, k) => s + num(f[k].value), 0);
+    $('#tKasar').textContent = rm(kasar); $('#tBersih').textContent = rm(kasar - pot);
+  };
+  box.addEventListener('click', e => { if (e.target.classList.contains('del')) { e.target.parentElement.remove(); kira(); } });
+  f.addEventListener('input', kira);
+  $('#tambahItem').addEventListener('click', () => { baris({ perkara: '', jumlah: '' }); box.lastChild.querySelector('input').focus(); });
+  kira();
+  f.addEventListener('submit', async e => {
+    e.preventDefault(); const b = f.querySelector('button[type=submit]'); const er = f.querySelector('.err');
+    const items = [...box.children].map(r => ({ ...r._meta, perkara: r.querySelector('[data-k=perkara]').value.replace(/^\d{2}\/\d{2} · /, '').trim(), jumlah: r.querySelector('[data-k=jumlah]').value })).filter(i => num(i.jumlah) !== 0 || i.perkara);
+    if (!items.some(i => num(i.jumlah) > 0)) { er.textContent = 'Sila masukkan sekurang-kurangnya satu jumlah pendapatan.'; er.hidden = false; return; }
+    b.disabled = true; b.textContent = 'Menyimpan…'; er.hidden = true;
+    try {
+      const s = await api('simpanGaji', { idPekerja: id, bulan: d.bulan, items, tarikhBayar: f.tarikhBayar.value,
+        potongan: { kwsp: f.pkwsp.value, perkeso: f.pperkeso.value, sip: f.psip.value, pcb: f.ppcb.value },
+        majikan: { kwsp: f.mkwsp.value, perkeso: f.mperkeso.value, sip: f.msip.value } });
+      toast('Disimpan ✓'); tunjukSlip(s); if (VIEW === 'gaji') viewGaji($('#view'));
+    } catch (x) { er.textContent = x.message; er.hidden = false; b.disabled = false; b.textContent = 'Simpan & jana'; }
+  });
+}
+
+function slipHTML(s) {
+  const c = s.syarikat || {}, p = s.pekerja || {}, isPT = s.jenis === 'Part-timer';
+  const dash = v => esc(v || '—');
+  const pend = isPT
+    ? `<table><thead><tr><th style="width:90px">TARIKH</th><th>KERJA / MAJLIS</th><th class="r">RM</th></tr></thead><tbody>
+       ${s.items.map(i => `<tr><td>${i.tarikh ? tkhSlip(i.tarikh) : ''}</td><td>${esc(i.perkara)}${i.unit && num(i.unit) !== 1 ? ` (${i.unit} × ${rm(i.kadar)})` : ''}</td><td class="r">${num(i.jumlah).toFixed(2)}</td></tr>`).join('')}
+       <tr class="tot"><td></td><td>Jumlah elaun</td><td class="r">${s.kasar.toFixed(2)}</td></tr></tbody></table>`
+    : `<table><thead><tr><th>PENDAPATAN</th><th class="r">RM</th></tr></thead><tbody>
+       ${s.items.map(i => `<tr><td>${esc(i.perkara)}</td><td class="r">${num(i.jumlah).toFixed(2)}</td></tr>`).join('')}
+       <tr class="tot"><td>Jumlah pendapatan</td><td class="r">${s.kasar.toFixed(2)}</td></tr></tbody></table>`;
+  const pot = `<table><thead><tr><th>POTONGAN</th><th class="r">RM</th></tr></thead><tbody>
+       <tr><td>KWSP (pekerja)</td><td class="r">${s.potongan.kwsp.toFixed(2)}</td></tr><tr><td>PERKESO (pekerja)</td><td class="r">${s.potongan.perkeso.toFixed(2)}</td></tr>
+       <tr><td>SIP / EIS (pekerja)</td><td class="r">${s.potongan.sip.toFixed(2)}</td></tr><tr><td>PCB (cukai bulanan)</td><td class="r">${s.potongan.pcb.toFixed(2)}</td></tr>
+       <tr class="tot"><td>Jumlah potongan</td><td class="r">${s.jumlahPotongan.toFixed(2)}</td></tr></tbody></table>`;
+  return `<div class="slip">
+    <div class="hd"><div style="display:flex;flex-direction:column;gap:3px"><div class="nm">${dash(c['Nama Syarikat'] || 'Amrina Legacy')}</div>
+      <div class="grey">No. Pendaftaran SSM: ${dash(c['No. SSM'])}</div><div class="grey">${dash(c['Alamat'])}</div>
+      <div class="grey">${c['No. Telefon'] ? 'Tel: ' + esc(c['No. Telefon']) + ' · ' : ''}${esc(c['E-mel'] || '')}</div></div>
+      <div style="text-align:right;display:flex;flex-direction:column;gap:3px;align-items:flex-end;flex-shrink:0">
+        <div style="font-size:18px;font-weight:700;letter-spacing:2px">${isPT ? 'PENYATA ELAUN' : 'SLIP GAJI'}</div>
+        ${isPT ? '<div style="font-size:11px;font-weight:700;letter-spacing:1px;color:#7A4E0E;background:#FBF1DE;padding:3px 10px;border-radius:999px">PEKERJA SAMBILAN</div>' : ''}
+        <div class="grey">Bulan: <b style="color:#1F1D1B">${esc(namaBulan(s.bulan))}</b></div>
+        <div class="grey">Tarikh bayaran: ${tkhSlip(s.tarikhBayar)}</div><div class="grey">No. rujukan: ${esc(s.rujukan)}</div></div></div>
+    <div class="info">
+      <div><span>Nama</span><b>${dash(p.nama)}</b></div><div><span>No. Kad Pengenalan</span><b>${dash(p.noKP)}</b></div>
+      <div><span>${isPT ? 'Tugas' : 'Jawatan'}</span><b>${dash(p.jawatan)}</b></div>
+      <div><span>${isPT ? 'Kadar elaun' : 'Tarikh mula kerja'}</span><b>${isPT ? (p.kadarElaun ? rm(p.kadarElaun) + ' / ' + esc(String(p.kiraanElaun || '').toLowerCase()) : '—') : (p.tarikhMula ? tkhSlip(p.tarikhMula) : '—')}</b></div>
+      <div><span>No. KWSP</span><b>${dash(p.noKWSP)}</b></div><div><span>No. PERKESO</span><b>${dash(p.noPERKESO)}</b></div>
+      ${isPT ? '' : `<div><span>No. Cukai (LHDN)</span><b>${dash(p.noCukai)}</b></div>`}
+      <div><span>Bank</span><b>${p.bank || p.noAkaun ? esc([p.bank, p.noAkaun].filter(Boolean).join(' · ')) : '—'}</b></div></div>
+    ${isPT ? pend + `<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">${pot}
+      <table><thead><tr><th>CARUMAN MAJIKAN</th><th class="r">RM</th></tr></thead><tbody><tr><td>KWSP</td><td class="r">${s.majikan.kwsp.toFixed(2)}</td></tr><tr><td>PERKESO</td><td class="r">${s.majikan.perkeso.toFixed(2)}</td></tr><tr><td>SIP / EIS</td><td class="r">${s.majikan.sip.toFixed(2)}</td></tr></tbody></table></div>`
+      : `<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">${pend}${pot}</div>`}
+    <div class="net"><span style="font-size:14px;font-weight:600;letter-spacing:1px">${isPT ? 'ELAUN BERSIH DIBAYAR' : 'GAJI BERSIH'}</span><b>${rm(s.bersih)}</b></div>
+    ${isPT ? '' : `<div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:11px;font-weight:700;letter-spacing:1px;color:#4A4541">CARUMAN MAJIKAN (TIDAK DITOLAK DARIPADA GAJI)</div>
+      <div class="grey" style="display:flex;gap:28px;flex-wrap:wrap"><span>KWSP: <b style="color:#1F1D1B">${rm(s.majikan.kwsp)}</b></span><span>PERKESO: <b style="color:#1F1D1B">${rm(s.majikan.perkeso)}</b></span><span>SIP / EIS: <b style="color:#1F1D1B">${rm(s.majikan.sip)}</b></span></div></div>`}
+    <div class="sign"><div><div class="ln"></div><b>Disediakan oleh</b><span style="color:#6B6560">Nama, jawatan &amp; cop syarikat</span></div>
+      <div><div class="ln"></div><b>Diterima oleh</b><span style="color:#6B6560">${dash(p.nama)}</span></div></div>
+    <div class="ft"><span>${isPT ? 'Penyata' : 'Slip'} ini dijana oleh sistem ${esc(c['Nama Syarikat'] || 'Amrina Legacy')}.</span><span>Sulit · Untuk kegunaan pekerja sahaja</span></div>
+  </div>`;
+}
+
+function tunjukSlip(s) {
+  ST.slipSemasa = s;
+  bukaModal(s.jenis === 'Part-timer' ? 'Penyata Elaun' : 'Slip Gaji', `
+    <div class="row-btn"><button class="btn" type="button" data-act="cetakSlip">Cetak / Simpan PDF</button></div>
+    <div class="note">Tip: Dalam skrin cetak, pilih <b>“Simpan sebagai PDF”</b> (Save as PDF) untuk dapat fail PDF yang boleh dihantar melalui WhatsApp atau e-mel.</div>
+    <div class="slip-scroll" id="slipBox"><div class="slip-scale">${slipHTML(s)}</div></div>`);
+  modal.style.width = 'min(880px, calc(100vw - 24px))';
+  const fit = () => { const w = $('#slipBox').clientWidth, sc = Math.min(1, w / 794); const el = $('#slipBox .slip-scale'); el.style.transform = `scale(${sc})`; $('#slipBox').style.height = (1123 * sc) + 'px'; };
+  requestAnimationFrame(fit);
+}
+async function lihatSlip(ruj) {
+  bukaModal('Slip', '<div class="loading">Sedang memuatkan…</div>');
+  try { tunjukSlip(await api('slip', { rujukan: ruj })); } catch (x) { bukaModal('Slip', `<div class="err">${esc(x.message)}</div>`); }
+}
+function cetakSlip() {
+  $('#cetak').innerHTML = slipHTML(ST.slipSemasa);
+  const s = ST.slipSemasa, nama = String(s.pekerja.nama || '').replace(/[^\w\s-]/g, '').trim();
+  const lama = document.title; document.title = `${s.jenis === 'Part-timer' ? 'Penyata Elaun' : 'Slip Gaji'} ${nama} ${s.bulan}`;
+  tutupModal();
+  setTimeout(() => { window.print(); document.title = lama; }, 120);
+}
+
+/* ---------------- Panduan ---------------- */
+function panduan() {
+  bukaModal('Panduan guna', `<ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:12px;line-height:1.6">
+    <li><b>Ada duit masuk atau keluar?</b> Tekan <b>Duit Masuk</b> / <b>Duit Keluar</b> di Utama. Taip ringgit, pilih “Untuk apa?”, tekan Simpan.</li>
+    <li><b>Pelanggan nak tempah?</b> Hantar <b>pautan borang tempahan</b> melalui WhatsApp. Tempahan masuk sendiri ke menu Tempahan, dan e-mel pemberitahuan dihantar kepada syarikat.</li>
+    <li><b>Sahkan tempahan:</b> Menu Tempahan → tekan nama pelanggan → tukar status, isi harga & deposit → Simpan.</li>
+    <li><b>Part-timer bekerja?</b> Menu Pekerja → <b>+ Rekod kerja</b> pada nama mereka.</li>
+    <li><b>Hujung bulan:</b> Menu Gaji → <b>Jana slip</b> → semak angka → Simpan → <b>Cetak / Simpan PDF</b>.</li>
+    <li><b>Tersalah masuk data?</b> Buka Google Sheet “Amrina Legacy – Data” dan betulkan terus dalam tab berkenaan.</li></ol>`);
+}
+
+/* ---------------- Klik & ubah (delegasi) ---------------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest('button, a'); if (!t) return;
+  const d = t.dataset;
+  if (d.nav) { tutupModal(); return pergi(d.nav); }
+  if (d.tempahan) return bukaTempahan(d.tempahan);
+  if (d.editpekerja) return borangPekerja(d.editpekerja);
+  if (d.rekodkerja) return borangRekodKerja(d.rekodkerja);
+  if (d.janagaji) return janaGaji(d.janagaji);
+  if (d.lihatslip) return lihatSlip(d.lihatslip);
+  if (d.tapispekerja) { ST.tapisPekerja = d.tapispekerja; return pergi('pekerja'); }
+  if (d.tapisstatus) { ST.tapisStatus = d.tapisstatus; return pergi('tempahan'); }
+  const grp = t.parentElement && t.parentElement.dataset.pilih;
+  if (grp) { t.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === t))); return; }
+  switch (d.act) {
+    case 'tutup': return tutupModal();
+    case 'keluar': return keluar();
+    case 'panduan': return panduan();
+    case 'duitMasuk': return borangDuit('Masuk');
+    case 'duitKeluar': return borangDuit('Keluar');
+    case 'tambahTempahan': return borangTempahanBaru();
+    case 'tambahPekerja': return borangPekerja(null);
+    case 'cetakSlip': return cetakSlip();
+    case 'salinLink':
+      return (navigator.clipboard ? navigator.clipboard.writeText(LINK_BORANG) : Promise.reject()).then(() => toast('Pautan disalin ✓')).catch(() => toast(LINK_BORANG));
+  }
+});
+document.addEventListener('change', e => {
+  const m = e.target.dataset && e.target.dataset.month;
+  if (m && e.target.value) { ST[m] = e.target.value; pergi(VIEW); }
+  if (e.target.type === 'file') { const s = e.target.closest('label').querySelector('[data-namafail]'); if (s) s.textContent = e.target.files[0] ? 'Dipilih: ' + e.target.files[0].name : 'Ambil gambar resit (tak wajib)'; }
+});
+modal.addEventListener('close', () => { modal.style.width = ''; });
+
+mula();
+</script>
+</body>
+</html>
