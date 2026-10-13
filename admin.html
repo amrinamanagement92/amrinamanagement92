@@ -73,14 +73,21 @@ main{flex:1;min-width:0;padding:36px 40px 56px}
 .stat .v{font-size:28px;font-weight:700;letter-spacing:-.5px}
 .stat.dark{background:var(--ink);border-color:var(--ink);color:#fff} .stat.dark .l{color:#D8D2CB}
 .quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
-.qa{min-height:88px;display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:14px;border:1px solid var(--line-soft);background:var(--surface);text-align:left;cursor:pointer;color:var(--ink)}
+.qa{-webkit-appearance:none;appearance:none;margin:0;font:inherit;line-height:1.3;min-height:88px;width:100%;display:grid;grid-template-columns:46px minmax(0,1fr);align-items:center;column-gap:14px;padding:16px 18px;border-radius:14px;border:1px solid var(--line-soft);background:var(--surface);text-align:left;cursor:pointer;color:var(--ink)}
 .qa:hover{border-color:var(--line)}
-.qa .ic{width:46px;height:46px;flex-shrink:0;border-radius:12px;background:var(--grey-soft);display:flex;align-items:center;justify-content:center}
-.qa b{display:block;font-size:16px} .qa span.s{font-size:13px;color:var(--body)}
-.qa.in{background:var(--sage-faint);border-color:#CFE0D5} .qa.in .ic{background:var(--sage);color:#fff}
-.qa.out{background:var(--rose-faint);border-color:#E8D2D5} .qa.out .ic{background:var(--rose);color:#fff}
-@media (max-width:520px){.quick{grid-template-columns:repeat(2,minmax(0,1fr))}.qa{flex-direction:column;align-items:flex-start;justify-content:space-between;min-height:112px}.qa span.s{display:none}
+.qa .ic{grid-row:1/3;width:46px;height:46px;border-radius:12px;background:var(--grey-soft);display:flex;align-items:center;justify-content:center}
+.qa .t{font-size:16px;font-weight:700;align-self:end}
+.qa .s{font-size:13px;color:var(--body);align-self:start}
+.qa.masuk{background:var(--sage-faint);border-color:#CFE0D5} .qa.masuk .ic{background:var(--sage);color:#fff}
+.qa.keluar{background:var(--rose-faint);border-color:#E8D2D5} .qa.keluar .ic{background:var(--rose);color:#fff}
+@media (max-width:520px){
+  .quick{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .qa{grid-template-columns:1fr;grid-template-rows:46px auto;row-gap:12px;align-content:start;min-height:118px;padding:16px}
+  .qa .ic{grid-row:1}.qa .t{grid-row:2;align-self:start}.qa .s{display:none}
   .grid-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.stat{padding:14px 16px}.stat .v{font-size:21px}.stat .l{font-size:12px}}
+.skel{background:linear-gradient(90deg,var(--grey-soft),#F8F6F3,var(--grey-soft));background-size:200% 100%;animation:sk 1.2s infinite;border-radius:14px}
+@keyframes sk{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.skel{animation:none}}
 .cols{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
 .cols>.main{flex:999 1 480px;min-width:0}
 .cols>.aside{flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:20px}
@@ -247,8 +254,35 @@ function waNo(t) { let d = String(t || '').replace(/\D/g, ''); if (d.startsWith(
 const store = {
   get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
   set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} },
-  del(k) { try { sessionStorage.removeItem(k); } catch (e) {} }
+  del(k) { try { sessionStorage.removeItem(k); } catch (e) {} },
+  clear() { try { sessionStorage.clear(); } catch (e) {} }
 };
+
+/* Cache: papar data terakhir serta-merta, kemas kini senyap di belakang */
+const BACA = ['maklumat', 'dashboard', 'senaraiTempahan', 'senaraiCashflow', 'senaraiPekerja', 'senaraiGaji', 'senaraiRekodKerja', 'slip', 'login'];
+const CACHE = {}, MASA = {};
+function bacaCache(k) {
+  if (k in CACHE) return CACHE[k];
+  try { const s = sessionStorage.getItem('c_' + k); if (s) return (CACHE[k] = JSON.parse(s)); } catch (e) {}
+  return undefined;
+}
+function simpanCache(k, v) { CACHE[k] = v; MASA[k] = Date.now(); try { sessionStorage.setItem('c_' + k, JSON.stringify(v)); } catch (e) {} }
+function kosongCache() { for (const k in CACHE) delete CACHE[k]; for (const k in MASA) delete MASA[k]; try { Object.keys(sessionStorage).filter(k => k.startsWith('c_')).forEach(k => sessionStorage.removeItem(k)); } catch (e) {} }
+async function ambil(action, data = {}) {
+  const k = action + JSON.stringify(data);
+  const lama = bacaCache(k);
+  if (lama !== undefined) {
+    if (!MASA[k] || Date.now() - MASA[k] > 15000) {
+      MASA[k] = Date.now();
+      api(action, data).then(r => {
+        if (JSON.stringify(r) !== JSON.stringify(CACHE[k])) { simpanCache(k, r); if (!modal.open) pergi(VIEW, true); }
+        else MASA[k] = Date.now();
+      }).catch(() => {});
+    }
+    return lama;
+  }
+  const r = await api(action, data); simpanCache(k, r); return r;
+}
 
 let PIN = store.get('al_pin') || '';
 let META = { kategori: [], servis: [], statusTempahan: [], syarikat: {} };
@@ -261,6 +295,7 @@ async function api(action, data = {}) {
     res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, data, pin: PIN }) });
   } catch (e) { throw new Error('Tiada sambungan internet. Sila cuba lagi.'); }
   const j = await res.json();
+  if (j.ok && BACA.indexOf(action) < 0) kosongCache(); // data berubah → buang cache lama
   if (!j.ok) {
     if (/PIN salah|PIN admin belum/.test(j.error) && action !== 'login') { keluar(); }
     throw new Error(j.error || 'Ralat tidak diketahui.');
@@ -300,19 +335,45 @@ const topBrand = () => `<div class="topbrand"><div class="serif" style="font-siz
   <div style="display:flex;gap:8px"><button class="x" type="button" data-act="panduan" aria-label="Panduan guna">${ic('help')}</button>
   <button class="x" type="button" data-act="keluar" aria-label="Log keluar"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg></button></div></div>`;
 
-async function pergi(v) {
-  VIEW = v; tandaMenu(); window.scrollTo(0, 0);
+const SKELETON = '<div class="skel" style="height:40px;width:60%"></div><div class="grid-stats"><div class="skel" style="height:110px"></div><div class="skel" style="height:110px"></div><div class="skel" style="height:110px"></div><div class="skel" style="height:110px"></div></div><div class="skel" style="height:72px"></div><div class="skel" style="height:72px"></div>';
+let giliran = 0;
+async function pergi(v, senyap) {
+  const id = ++giliran;
+  const tukar = VIEW !== v || !senyap;
+  VIEW = v; tandaMenu();
+  if (tukar && !senyap) window.scrollTo(0, 0);
   const el = $('#view');
-  el.innerHTML = topBrand() + '<div class="loading">Sedang memuatkan…</div>';
-  try { await ({ utama: viewUtama, tempahan: viewTempahan, duit: viewDuit, pekerja: viewPekerja, gaji: viewGaji })[v](el); }
-  catch (e) { el.innerHTML = topBrand() + `<div class="err">${esc(e.message)}</div><button class="btn ghost" type="button" data-nav="${v}">Cuba lagi</button>`; }
+  // Lakar rangka hanya jika data belum ada dalam masa 120ms
+  const t = senyap ? null : setTimeout(() => { if (id === giliran) el.innerHTML = topBrand() + SKELETON; }, 120);
+  const sementara = document.createElement('div');
+  try {
+    await ({ utama: viewUtama, tempahan: viewTempahan, duit: viewDuit, pekerja: viewPekerja, gaji: viewGaji })[v](sementara);
+    if (id !== giliran) return;
+    clearTimeout(t);
+    const y = window.scrollY; el.innerHTML = sementara.innerHTML; if (senyap) window.scrollTo(0, y);
+  } catch (e) {
+    clearTimeout(t);
+    if (id === giliran && !senyap) el.innerHTML = topBrand() + `<div class="err">${esc(e.message)}</div><button class="btn ghost" type="button" data-nav="${v}">Cuba lagi</button>`;
+  }
+}
+
+/* Muat awal halaman lain di belakang supaya tukar menu terasa serta-merta */
+async function muatAwal() {
+  const b = bulanIni();
+  for (const [a, d] of [['senaraiTempahan', { bulan: b }], ['senaraiCashflow', { bulan: b }], ['senaraiPekerja', {}], ['senaraiGaji', { bulan: b }]]) {
+    const k = a + JSON.stringify(d);
+    if (bacaCache(k) !== undefined) continue;
+    try { simpanCache(k, await api(a, d)); } catch (e) { return; }
+  }
 }
 
 /* ---------------- Log masuk ---------------- */
 async function mula() {
   binaMenu();
   if (!PIN) return tunjukLogin();
-  try { await api('login'); await masuk(); } catch (e) { tunjukLogin(e.message); }
+  const m = bacaCache('maklumat{}');
+  if (m) { META = m; $('#login').hidden = true; $('#app').hidden = false; pergi('utama'); ambil('maklumat').then(x => META = x).catch(() => {}); setTimeout(muatAwal, 800); return; }
+  try { await masuk(); } catch (e) { tunjukLogin(e.message); }
 }
 function tunjukLogin(msg) {
   $('#app').hidden = true; $('#login').hidden = false;
@@ -320,17 +381,20 @@ function tunjukLogin(msg) {
   setTimeout(() => $('#pin').focus(), 50);
 }
 async function masuk() {
-  META = await api('maklumat');
+  // Satu panggilan untuk semak PIN + ambil tetapan (dulu dua panggilan berasingan)
+  const m = await api('maklumat');
+  META = m; simpanCache('maklumat{}', m);
   $('#login').hidden = true; $('#app').hidden = false;
-  pergi('utama');
+  await pergi('utama');
+  setTimeout(muatAwal, 500);
 }
-function keluar() { PIN = ''; store.del('al_pin'); $('#pin').value = ''; $('#loginErr').hidden = true; tunjukLogin(); }
+function keluar() { PIN = ''; kosongCache(); store.clear(); $('#pin').value = ''; $('#loginErr').hidden = true; tunjukLogin(); }
 
 $('#loginForm').addEventListener('submit', async e => {
   e.preventDefault();
   const b = $('#loginBtn'); b.disabled = true; b.textContent = 'Menyemak…'; $('#loginErr').hidden = true;
   PIN = $('#pin').value.trim();
-  try { await api('login'); store.set('al_pin', PIN); await masuk(); }
+  try { await masuk(); store.set('al_pin', PIN); }
   catch (x) { PIN = ''; $('#loginErr').textContent = x.message; $('#loginErr').hidden = false; }
   finally { b.disabled = false; b.textContent = 'Masuk'; }
 });
@@ -359,7 +423,7 @@ function kadTempahan(t) {
 }
 
 async function viewUtama(el) {
-  const d = await api('dashboard', { bulan: bulanIni() });
+  const d = await ambil('dashboard', { bulan: bulanIni() });
   const h = new Date().getHours();
   const salam = h < 12 ? 'Selamat pagi.' : h < 15 ? 'Selamat tengah hari.' : h < 19 ? 'Selamat petang.' : 'Selamat malam.';
   const now = new Date();
@@ -368,10 +432,10 @@ async function viewUtama(el) {
   <div class="head"><div><div class="sub">${HARI[now.getDay()]}, ${now.getDate()} ${BLN_PENUH[now.getMonth()]} ${now.getFullYear()}</div><h1>${salam}</h1></div></div>
   <section aria-label="Tindakan pantas"><h2 style="font-size:17px;margin-bottom:12px">Apa yang anda nak buat?</h2>
     <div class="quick">
-      <button class="qa in" type="button" data-act="duitMasuk"><span class="ic">${ic('plus', 24, 2)}</span><span><b>Duit Masuk</b><span class="s">Pelanggan bayar deposit / penuh</span></span></button>
-      <button class="qa out" type="button" data-act="duitKeluar"><span class="ic">${ic('minus', 24, 2)}</span><span><b>Duit Keluar</b><span class="s">Beli bahan, bayar bil, minyak</span></span></button>
-      <button class="qa" type="button" data-act="tambahTempahan"><span class="ic">${ic('addcal', 24)}</span><span><b>Tambah Tempahan</b><span class="s">Pelanggan tempah melalui telefon</span></span></button>
-      <button class="qa" type="button" data-nav="gaji"><span class="ic">${ic('gaji', 24)}</span><span><b>Jana Slip Gaji</b><span class="s">Sekali tekan, siap PDF</span></span></button>
+      <button class="qa masuk" type="button" data-act="duitMasuk"><span class="ic">${ic('plus', 24, 2)}</span><span class="t">Duit Masuk</span><span class="s">Pelanggan bayar deposit / penuh</span></button>
+      <button class="qa keluar" type="button" data-act="duitKeluar"><span class="ic">${ic('minus', 24, 2)}</span><span class="t">Duit Keluar</span><span class="s">Beli bahan, bayar bil, minyak</span></button>
+      <button class="qa" type="button" data-act="tambahTempahan"><span class="ic">${ic('addcal', 24)}</span><span class="t">Tambah Tempahan</span><span class="s">Pelanggan tempah melalui telefon</span></button>
+      <button class="qa" type="button" data-nav="gaji"><span class="ic">${ic('gaji', 24)}</span><span class="t">Jana Slip Gaji</span><span class="s">Sekali tekan, siap PDF</span></button>
     </div>
   </section>
   <section class="grid-stats" aria-label="Ringkasan bulan ini">
@@ -406,7 +470,7 @@ async function viewUtama(el) {
 
 /* ---------------- TEMPAHAN ---------------- */
 async function viewTempahan(el) {
-  const rows = await api('senaraiTempahan', { bulan: ST.bulanTempahan });
+  const rows = await ambil('senaraiTempahan', { bulan: ST.bulanTempahan });
   ST.cacheTempahan = rows;
   const status = ['Semua'].concat(META.statusTempahan || []);
   const tapis = ST.tapisStatus === 'Semua' ? rows : rows.filter(r => r['Status'] === ST.tapisStatus);
@@ -477,7 +541,7 @@ function borangTempahanBaru() {
 
 /* ---------------- DUIT (Cashflow) ---------------- */
 async function viewDuit(el) {
-  const rows = await api('senaraiCashflow', { bulan: ST.bulanDuit });
+  const rows = await ambil('senaraiCashflow', { bulan: ST.bulanDuit });
   const masuk = rows.filter(r => r['Jenis'] === 'Masuk').reduce((s, r) => s + num(r['Jumlah (RM)']), 0);
   const keluar = rows.filter(r => r['Jenis'] === 'Keluar').reduce((s, r) => s + num(r['Jumlah (RM)']), 0);
   const ikutKat = {};
@@ -560,7 +624,7 @@ function bacaFail(file) {
 
 /* ---------------- PEKERJA ---------------- */
 async function viewPekerja(el) {
-  const semua = (await api('senaraiPekerja')).filter(p => p['Status'] !== 'Berhenti');
+  const semua = (await ambil('senaraiPekerja')).filter(p => p['Status'] !== 'Berhenti');
   ST.cachePekerja = semua;
   const tetap = semua.filter(p => p['Jenis'] === 'Staf Tetap'), pt = semua.filter(p => p['Jenis'] === 'Part-timer');
   const t = ST.tapisPekerja;
@@ -663,7 +727,7 @@ async function borangRekodKerja(id) {
 
 /* ---------------- GAJI ---------------- */
 async function viewGaji(el) {
-  const [pek, gaji] = await Promise.all([api('senaraiPekerja'), api('senaraiGaji', { bulan: ST.bulanGaji })]);
+  const [pek, gaji] = await Promise.all([ambil('senaraiPekerja'), ambil('senaraiGaji', { bulan: ST.bulanGaji })]);
   const aktif = pek.filter(p => p['Status'] !== 'Berhenti');
   el.innerHTML = topBrand() + `
   <div class="head"><div><div class="sub">Slip gaji staf tetap &amp; penyata elaun part-timer</div><h1>Gaji</h1></div></div>
